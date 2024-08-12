@@ -1,18 +1,46 @@
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppStoreType } from "../store/appStore";
-import { setStream } from "../store/slices/global.slice";
+import { setStream, setViewers } from "../store/slices/global.slice";
 import { SignalingManager } from "../managers/signaling.manager";
 import { MessageTypes } from "../types";
 
 export const Room = () => {
-  const joinId = useSelector((state: AppStoreType) => state.global.joinId);
+  const {joinId, stream, viewers} = useSelector((state: AppStoreType) => state.global);
   const videoRef = useRef<HTMLVideoElement>(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
     SignalingManager.getInstance().setCallbacks(MessageTypes.NEW_USER, (id: number) => {
-      console.log({id})
+
+      const pc = new RTCPeerConnection();
+
+      pc.onnegotiationneeded = async () => {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          
+          SignalingManager.getInstance().giveOffer(joinId as string, id, pc.localDescription as RTCSessionDescription);
+      }
+
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+            SignalingManager.getInstance().sendIceCandidateToUser(id, event.candidate);
+          }
+      }
+
+      if (stream) {
+        pc.addTrack(stream.getVideoTracks()[0], stream);
+      }
+
+      // this.viewers[userId] = pc;
+      dispatch(setViewers({ id, rtcObj: pc}));
+    })
+
+    SignalingManager.getInstance().setCallbacks(MessageTypes.RECEIVE_ANSWER, ({userId, sdp }: { userId: number, sdp: RTCSessionDescription}) => {
+      if (viewers[userId]) {
+        viewers[userId].setRemoteDescription(new RTCSessionDescription(sdp));
+      }
     })
     startStreaming();
   }, [])

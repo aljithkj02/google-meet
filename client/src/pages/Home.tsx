@@ -13,6 +13,7 @@ export const Home = () => {
 
   useEffect(() => {
     SignalingManager.getInstance().setCallbacks(MessageTypes.JOIN_ID, (joinId: string) => {
+      dispatch(setJoinId(joinId));
       if (joinId) navigate(`/room/${joinId}`);
     })
 

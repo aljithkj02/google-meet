@@ -66,6 +66,22 @@ export class SignalingManager {
                         })
                     }
                     break;
+
+                case MessageTypes.RECEIVE_OFFER:
+                    if (this.callbacks[MessageTypes.RECEIVE_OFFER]?.length) {
+                        this.callbacks[MessageTypes.RECEIVE_OFFER].forEach((cb: (arg?: any) => void) => {
+                            cb(message.data);
+                        })
+                    }
+                    break;
+
+                case MessageTypes.RECEIVE_ANSWER:
+                    if (this.callbacks[MessageTypes.RECEIVE_ANSWER]?.length) {
+                        this.callbacks[MessageTypes.RECEIVE_ANSWER].forEach((cb: (arg?: any) => void) => {
+                            cb(message.data);
+                        })
+                    }
+                    break;
             
                 default:
                     break;
@@ -106,5 +122,37 @@ export class SignalingManager {
         } else {
             this.callbacks[key] = [fn];
         }
+    }
+
+    giveOffer(roomId: string, userId: number, sdp: RTCSessionDescription) {
+        this.ws.send(JSON.stringify({
+            type: MessageTypes.GIVE_OFFER,
+            data: {
+              roomId,
+              userId,
+              sdp
+            }
+        }))
+    }
+
+    giveAnswer(roomId: string, userId: number, sdp: RTCSessionDescription) {
+        this.ws.send(JSON.stringify({
+            type: MessageTypes.GIVE_ANSWER,
+            data: {
+              roomId,
+              userId,
+              sdp
+            }
+        }))
+    }
+
+    sendIceCandidateToUser(userId: number, candidate: RTCIceCandidate) {
+        this.ws.send(JSON.stringify({ 
+            type: MessageTypes.ICE_CANDIDATE_TO_USER,
+            data: {
+                candidate,
+                userId
+            }
+        }))
     }
 }
