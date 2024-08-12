@@ -15,10 +15,10 @@ class IncomingMessage {
     }
 
     static getInstance() {
-        if (!IncomingMessage.instance) {
-            IncomingMessage.instance = new IncomingMessage();
+        if (!this.instance) {
+            this.instance = new IncomingMessage();
         }
-        return IncomingMessage.instance;
+        return this.instance;
     }
 
     handleRequest(ws: WebSocket, message: any) {

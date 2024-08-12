@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppStoreType } from "../store/appStore";
 import { setStream } from "../store/slices/global.slice";
+import { SignalingManager } from "../managers/signaling.manager";
+import { MessageTypes } from "../types";
 
 export const Room = () => {
   const joinId = useSelector((state: AppStoreType) => state.global.joinId);
@@ -9,6 +11,9 @@ export const Room = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    SignalingManager.getInstance().setCallbacks(MessageTypes.NEW_USER, (id: number) => {
+      console.log({id})
+    })
     startStreaming();
   }, [])
 

@@ -1,25 +1,34 @@
 import { useEffect, useState } from "react"
-import { wsManager } from "../managers/ws.manager";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { AppStoreType } from "../store/appStore";
+import { useDispatch } from "react-redux";
+import { SignalingManager } from "../managers/signaling.manager";
+import { MessageTypes } from "../types";
+import { setJoinId, setUserId } from "../store/slices/global.slice";
+
 export const Home = () => {
   const [text, setText] = useState("");
-  const { isJoined, joinId } = useSelector((state: AppStoreType) => state.global);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (joinId) navigate(`/room/${joinId}`);
-    if (isJoined) navigate(`/viewer`);
-  }, [isJoined, joinId])
+    SignalingManager.getInstance().setCallbacks(MessageTypes.JOIN_ID, (joinId: string) => {
+      if (joinId) navigate(`/room/${joinId}`);
+    })
+
+    SignalingManager.getInstance().setCallbacks(MessageTypes.JOIN_SUCCESSFUL, ({ userId, roomId }: { userId: Number, roomId: string}) => {
+      dispatch(setUserId(userId));
+      dispatch(setJoinId(roomId));
+      navigate('/viewer');
+    })
+  }, [])
 
   const handleNewMeeting = () => {
-    wsManager.createRoom();
+    SignalingManager.getInstance().createRoom();
   }
 
   const handleJoinRoom = (id: string) => {
-    wsManager.joinRoom(id);
+    SignalingManager.getInstance().joinRoom(id);
   }
 
   return (
