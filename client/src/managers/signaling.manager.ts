@@ -1,4 +1,4 @@
-import { MessageTypes } from "../types";
+import { IceCandidateToOwnerPayload, MessageTypes } from "../types";
 
 export class SignalingManager {
     static instance: SignalingManager;
@@ -6,6 +6,8 @@ export class SignalingManager {
     private bufferMessages: any[];
     private isInitialized: boolean = false;
     private callbacks: any = {};
+    viewers: Record<number, RTCPeerConnection> = {};
+    stream: MediaStream | null = null;
 
     private constructor() {
         this.ws = new WebSocket("ws://localhost:8000");
@@ -33,6 +35,7 @@ export class SignalingManager {
         this.ws.onmessage = (event) => {
             const message = JSON.parse(event.data);
             const type: MessageTypes = message.type;
+            console.log({message})
 
             switch (type) {
                 case MessageTypes.JOIN_ID:
@@ -78,6 +81,22 @@ export class SignalingManager {
                 case MessageTypes.RECEIVE_ANSWER:
                     if (this.callbacks[MessageTypes.RECEIVE_ANSWER]?.length) {
                         this.callbacks[MessageTypes.RECEIVE_ANSWER].forEach((cb: (arg?: any) => void) => {
+                            cb(message.data);
+                        })
+                    }
+                    break;
+
+                case MessageTypes.USER_ICE_CANDIDATE:
+                    if (this.callbacks[MessageTypes.USER_ICE_CANDIDATE]?.length) {
+                        this.callbacks[MessageTypes.USER_ICE_CANDIDATE].forEach((cb: (arg?: any) => void) => {
+                            cb(message.data);
+                        })
+                    }
+                    break;
+
+                case MessageTypes.OWNER_ICE_CANDIDATE:
+                    if (this.callbacks[MessageTypes.OWNER_ICE_CANDIDATE]?.length) {
+                        this.callbacks[MessageTypes.OWNER_ICE_CANDIDATE].forEach((cb: (arg?: any) => void) => {
                             cb(message.data);
                         })
                     }
@@ -154,5 +173,24 @@ export class SignalingManager {
                 userId
             }
         }))
+    }
+
+    sendIceCandidateToOwner(userId: number, roomId: string, candidate: RTCIceCandidate) {
+        this.ws.send(JSON.stringify({
+            type: MessageTypes.ICE_CANDIDATE_TO_OWNER,
+            data: {
+                userId,
+                roomId,
+                candidate
+            }
+        }))
+    }
+
+    addNewViewer(userId: number, pc: RTCPeerConnection) {
+        this.viewers[userId] = pc;
+    }
+
+    addStream(stream: MediaStream) {
+        this.stream = stream;
     }
 }
