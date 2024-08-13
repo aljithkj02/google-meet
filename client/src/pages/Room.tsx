@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { AppStoreType } from "../store/appStore";
-import { setStream, setViewers } from "../store/slices/global.slice";
 import { SignalingManager } from "../managers/signaling.manager";
 import { MessageTypes } from "../types";
 
@@ -9,7 +8,6 @@ export const Room = () => {
   const {joinId} = useSelector((state: AppStoreType) => state.global);
   const [userCount, setUserCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const dispatch = useDispatch();
 
   useEffect(() => {
     SignalingManager.getInstance().setCallbacks(MessageTypes.NEW_USER, async (id: number) => {
@@ -36,7 +34,6 @@ export const Room = () => {
       }
 
       const stream = SignalingManager.getInstance().stream;
-      console.log({stream})
       if (stream) {
         pc.addTrack(stream.getVideoTracks()[0], stream);
       }
@@ -45,7 +42,6 @@ export const Room = () => {
     })
 
     SignalingManager.getInstance().setCallbacks(MessageTypes.RECEIVE_ANSWER, ({userId, sdp }: { userId: number, sdp: RTCSessionDescription}) => {
-      console.log("Answer Recieved")
       const viewers = SignalingManager.getInstance().viewers;
       if (viewers[userId]) {
         viewers[userId].setRemoteDescription(new RTCSessionDescription(sdp));
@@ -53,7 +49,6 @@ export const Room = () => {
     })
 
     SignalingManager.getInstance().setCallbacks(MessageTypes.OWNER_ICE_CANDIDATE, ({ userId, candidate }: { userId: number, candidate: RTCIceCandidate}) => {
-      console.log("Recieved Ice candidate");
       const viewers = SignalingManager.getInstance().viewers;
       if (viewers[userId]) {
         viewers[userId].addIceCandidate(candidate);

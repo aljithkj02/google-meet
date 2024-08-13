@@ -10,11 +10,9 @@ export const Viewer = () => {
 
     useEffect(() => {
         SignalingManager.getInstance().setCallbacks(MessageTypes.RECEIVE_OFFER, async (sdp: RTCSessionDescription) => {
-            console.log("Offer Recieved")
             const pc = new RTCPeerConnection();
 
             pc.ontrack = (event) => {
-                console.log("Event recieved")
                 const video = document.createElement('video');
                 document.getElementById('viewer')?.appendChild(video);
                 console.log({event});
@@ -35,31 +33,13 @@ export const Viewer = () => {
             }
 
             setRtc(pc);
-            // startReceiving(pc);
         })
 
         SignalingManager.getInstance().setCallbacks(MessageTypes.USER_ICE_CANDIDATE, (candidate: RTCIceCandidate) => {
             rtc?.addIceCandidate(candidate);
         })
 
-    }, []); 
-    
-    function startReceiving(pc: RTCPeerConnection) {
-        const video = document.createElement('video');
-        document.getElementById('viewer')?.appendChild(video);
-
-        pc.ontrack = (event) => {
-            console.log(event);
-            video.srcObject = new MediaStream([event.track]);
-            video.play();
-        }
-
-        // socket.onmessage = (event) => {
-        //     (message.type === 'iceCandidate') {
-        //         pc.addIceCandidate(message.candidate);
-        //     }
-        // }
-    }
+    }, []);
 
     return (
         <div id="viewer">Viewer</div>
