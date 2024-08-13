@@ -101,6 +101,14 @@ export class SignalingManager {
                         })
                     }
                     break;
+
+                case MessageTypes.LEAVE_MEETING:
+                    if (this.callbacks[MessageTypes.LEAVE_MEETING]?.length) {
+                        this.callbacks[MessageTypes.LEAVE_MEETING].forEach((cb: (arg?: any) => void) => {
+                            cb(message.data);
+                        })
+                    }
+                    break;
             
                 default:
                     break;
@@ -192,5 +200,15 @@ export class SignalingManager {
 
     addStream(stream: MediaStream) {
         this.stream = stream;
+    }
+
+    leaveMeeting(roomId: string, userId: number) {
+        this.ws.send(JSON.stringify({
+            type: MessageTypes.LEAVE_MEETING,
+            data: {
+                userId,
+                roomId
+            }
+        }))
     }
 }

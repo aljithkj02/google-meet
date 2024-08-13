@@ -56,6 +56,12 @@ export const Room = () => {
         viewers[userId].addIceCandidate(candidate);
       }
     })
+
+    SignalingManager.getInstance().setCallbacks(MessageTypes.LEAVE_MEETING, ({ userId }: { userId: number}) => {
+        delete SignalingManager.getInstance().viewers[userId];
+        setUserCount(count => count - 1);
+    })
+
     startStreaming();
 
     const interval = setInterval(() => {
@@ -138,7 +144,7 @@ export const Room = () => {
 
             <p className="text-white">Viewers</p>
 
-            <p className="text-white text-xl">{userCount}</p>
+            <p className="text-white text-xl">{userCount > 0 ? userCount: 0}</p>
           </div>
         </div>
     </div>

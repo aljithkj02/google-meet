@@ -28,3 +28,8 @@ export type IceCandidateUser = {
     candidate: string;
     userId: number;
 }
+
+export type TypeLeaveMeating = {
+    roomId: string;
+    userId: number;
+}
