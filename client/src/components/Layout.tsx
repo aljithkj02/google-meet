@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation, useParams } from "react-router-dom"
 import { Navbar } from "./Navbar"
 import toast, { Toaster } from "react-hot-toast"
 import { useEffect } from "react"
@@ -9,7 +9,8 @@ import { useSelector } from "react-redux"
 import { AppStoreType } from "../store/appStore"
 
 export const Layout = () => {
-  const loading = useSelector((state: AppStoreType) => state.global.loading)
+  const loading = useSelector((state: AppStoreType) => state.global.loading);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     SignalingManager.getInstance().setCallbacks(MessageTypes.ERROR, (msg: string) => {
@@ -20,7 +21,7 @@ export const Layout = () => {
 
   return (
     <div>
-        <Navbar />
+        { pathname === '/' && <Navbar /> }
         { loading && <Loader /> }
         <div>
             <Outlet />
