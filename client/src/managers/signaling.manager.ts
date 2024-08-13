@@ -211,4 +211,13 @@ export class SignalingManager {
             }
         }))
     }
+
+    closeMeeting(roomId: string) {
+        this.ws.send(JSON.stringify({
+            type: MessageTypes.CLOSE_MEETING,
+            data: {
+                roomId
+            }
+        }))
+    }
 }

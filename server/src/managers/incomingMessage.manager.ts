@@ -1,7 +1,7 @@
 import { WebSocket } from 'ws'
 import crypto from 'crypto'
 import { MessageTypes } from "../types/enums";
-import { AppStoreType, GiveAnswerPayload, GiveOfferPayload, IceCandidateOwner, IceCandidateUser, TypeLeaveMeating } from '../types/incoming.types';
+import { AppStoreType, GiveAnswerPayload, GiveOfferPayload, IceCandidateOwner, IceCandidateUser, TypeCloseMeeting, TypeLeaveMeating } from '../types/incoming.types';
 
 class IncomingMessage {
     static instance: IncomingMessage;
@@ -45,6 +45,10 @@ class IncomingMessage {
             
             case MessageTypes.LEAVE_MEETING:
                 this.leaveMeeting(ws, message.data);
+                break;
+            
+            case MessageTypes.CLOSE_MEETING:
+                this.closeMeeting(ws, message.data);
                 break;
         
             default:
@@ -190,6 +194,19 @@ class IncomingMessage {
                 userId: payload.userId
             }
         }))
+    }
+
+    private closeMeeting(ws: WebSocket, payload: TypeCloseMeeting) {
+        const room = this.appStore[payload.roomId];
+        if (!room) {
+            ws.send(JSON.stringify({
+                type: MessageTypes.ERROR,
+                message: "No such room exist!"
+            }))
+            return;
+        }
+
+        delete this.appStore[payload.roomId]
     }
 }
 

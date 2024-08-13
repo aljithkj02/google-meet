@@ -3,6 +3,8 @@ import { useSelector } from "react-redux";
 import { AppStoreType } from "../store/appStore";
 import { SignalingManager } from "../managers/signaling.manager";
 import { MessageTypes } from "../types";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export const Room = () => {
   const {joinId} = useSelector((state: AppStoreType) => state.global);
@@ -10,6 +12,8 @@ export const Room = () => {
 
   const [userCount, setUserCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     SignalingManager.getInstance().setCallbacks(MessageTypes.NEW_USER, async (id: number) => {
@@ -68,7 +72,16 @@ export const Room = () => {
       setTime(getCurrentTime());
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+        clearInterval(interval);
+        if (videoRef.current) {
+            SignalingManager.getInstance().stream?.getTracks().forEach(track => {
+              track.stop();
+            });
+            SignalingManager.getInstance().stream = null;
+            videoRef.current.srcObject = null;
+        }
+    }
   }, [])
 
   const startStreaming = async () => {
@@ -96,6 +109,13 @@ export const Room = () => {
       const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
 
       return `${hours}:${formattedMinutes}:${formattedSeconds} ${ampm}`;
+  }
+
+  const closeMeeting = () => {
+    SignalingManager.getInstance().closeMeeting(joinId as string);
+    toast.dismiss();
+    toast.success('Meeting closed successfully!');
+    navigate('/');
   }
 
   return (
@@ -128,7 +148,9 @@ export const Room = () => {
                 </svg>
             </div>
 
-            <div className="bg-[#FF3B30] p-1 rounded-[50%] cursor-pointer">
+            <div className="bg-[#FF3B30] p-1 rounded-[50%] cursor-pointer"
+                onClick={closeMeeting}
+            >
                 <img src="https://uxwing.com/wp-content/themes/uxwing/download/communication-chat-call/end-call-icon.png"
                     alt="Call hangup"
                     className="w-10 bg-white rounded-[50%]"

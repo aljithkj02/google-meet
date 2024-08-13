@@ -33,3 +33,7 @@ export type TypeLeaveMeating = {
     roomId: string;
     userId: number;
 }
+
+export type TypeCloseMeeting = {
+    roomId: string
+}

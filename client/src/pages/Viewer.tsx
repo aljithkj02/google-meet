@@ -47,8 +47,6 @@ export const Viewer = () => {
             rtc?.addIceCandidate(candidate);
         })
 
-        return () => handleLeaveMeet();
-
     }, []);
 
     const handleLeaveMeet = () => {
