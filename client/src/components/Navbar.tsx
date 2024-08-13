@@ -1,4 +1,3 @@
-
 export const Navbar = () => {
   return (
     <div className="px-6 py-3 shadow-sm">
