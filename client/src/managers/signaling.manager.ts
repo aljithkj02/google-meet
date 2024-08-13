@@ -1,4 +1,4 @@
-import { IceCandidateToOwnerPayload, MessageTypes } from "../types";
+import { MessageTypes } from "../types";
 
 export class SignalingManager {
     static instance: SignalingManager;
