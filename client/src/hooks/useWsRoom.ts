@@ -11,48 +11,48 @@ export const useWsRoom = (videoRef: RefObject<HTMLVideoElement>) => {
 
     useEffect(() => {
         SignalingManager.getInstance().setCallbacks(MessageTypes.NEW_USER, async (id: number) => {
-        setUserCount(count => count + 1);
-        const pc = new RTCPeerConnection();
+            setUserCount(count => count + 1);
+            const pc = new RTCPeerConnection();
 
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        
-        SignalingManager.getInstance().giveOffer(joinId as string, id, pc.localDescription as RTCSessionDescription);
-
-        pc.onnegotiationneeded = async () => {
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
             
             SignalingManager.getInstance().giveOffer(joinId as string, id, pc.localDescription as RTCSessionDescription);
-        }
 
-
-        pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                SignalingManager.getInstance().sendIceCandidateToUser(id, event.candidate);
+            pc.onnegotiationneeded = async () => {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                SignalingManager.getInstance().giveOffer(joinId as string, id, pc.localDescription as RTCSessionDescription);
             }
-        }
 
-        const stream = SignalingManager.getInstance().stream;
-        if (stream) {
-            pc.addTrack(stream.getVideoTracks()[0], stream);
-        }
 
-        SignalingManager.getInstance().addNewViewer(id, pc);
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    SignalingManager.getInstance().sendIceCandidateToUser(id, event.candidate);
+                }
+            }
+
+            const stream = SignalingManager.getInstance().stream;
+            if (stream) {
+                pc.addTrack(stream.getVideoTracks()[0], stream);
+            }
+
+            SignalingManager.getInstance().addNewViewer(id, pc);
         })
 
         SignalingManager.getInstance().setCallbacks(MessageTypes.RECEIVE_ANSWER, ({userId, sdp }: { userId: number, sdp: RTCSessionDescription}) => {
-        const viewers = SignalingManager.getInstance().viewers;
-        if (viewers[userId]) {
-            viewers[userId].setRemoteDescription(new RTCSessionDescription(sdp));
-        }
+            const viewers = SignalingManager.getInstance().viewers;
+            if (viewers[userId]) {
+                viewers[userId].setRemoteDescription(new RTCSessionDescription(sdp));
+            }
         })
 
         SignalingManager.getInstance().setCallbacks(MessageTypes.OWNER_ICE_CANDIDATE, ({ userId, candidate }: { userId: number, candidate: RTCIceCandidate}) => {
-        const viewers = SignalingManager.getInstance().viewers;
-        if (viewers[userId]) {
-            viewers[userId].addIceCandidate(candidate);
-        }
+            const viewers = SignalingManager.getInstance().viewers;
+            if (viewers[userId]) {
+                viewers[userId].addIceCandidate(candidate);
+            }
         })
 
         SignalingManager.getInstance().setCallbacks(MessageTypes.LEAVE_MEETING, ({ userId }: { userId: number}) => {
@@ -63,15 +63,16 @@ export const useWsRoom = (videoRef: RefObject<HTMLVideoElement>) => {
         startStreaming();
 
         const interval = setInterval(() => {
-        setTime(getCurrentTime());
+            setTime(getCurrentTime());
         }, 1000);
 
         return () => {
             clearInterval(interval);
             if (videoRef.current) {
                 SignalingManager.getInstance().stream?.getTracks().forEach(track => {
-                track.stop();
+                    track.stop();
                 });
+                
                 SignalingManager.getInstance().stream = null;
                 videoRef.current.srcObject = null;
             }
@@ -79,11 +80,11 @@ export const useWsRoom = (videoRef: RefObject<HTMLVideoElement>) => {
     }, [])
 
     const startStreaming = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
+        const stream: MediaStream | null = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
         SignalingManager.getInstance().addStream(stream);
         
         if(videoRef.current){
-            videoRef.current.srcObject = stream;
+            videoRef.current.srcObject = SignalingManager.getInstance().stream;
 
             videoRef.current && videoRef.current.play();
         }
