@@ -29,7 +29,7 @@ export const useWsRoom = (videoRef: RefObject<HTMLVideoElement>) => {
 
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
-                    SignalingManager.getInstance().sendIceCandidateToUser(id, event.candidate);
+                    SignalingManager.getInstance().sendIceCandidateToUser(id, event.candidate, joinId as string);
                 }
             }
 

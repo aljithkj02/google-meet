@@ -108,6 +108,14 @@ export class SignalingManager {
                         })
                     }
                     break;
+
+                case MessageTypes.MEETING_CLOSED:
+                    if (this.callbacks[MessageTypes.MEETING_CLOSED]?.length) {
+                        this.callbacks[MessageTypes.MEETING_CLOSED].forEach((cb: (arg?: any) => void) => {
+                            cb(message.message);
+                        })
+                    }
+                    break;
             
                 default:
                     break;
@@ -172,12 +180,13 @@ export class SignalingManager {
         }))
     }
 
-    sendIceCandidateToUser(userId: number, candidate: RTCIceCandidate) {
+    sendIceCandidateToUser(userId: number, candidate: RTCIceCandidate, roomId: string) {
         this.ws.send(JSON.stringify({ 
             type: MessageTypes.ICE_CANDIDATE_TO_USER,
             data: {
                 candidate,
-                userId
+                userId,
+                roomId
             }
         }))
     }

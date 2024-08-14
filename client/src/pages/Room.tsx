@@ -1,10 +1,11 @@
 import { useRef } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppStoreType } from "../store/appStore";
 import { SignalingManager } from "../managers/signaling.manager";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useWsRoom } from "../hooks/useWsRoom";
+import { setJoinId } from "../store/slices/global.slice";
 
 export const Room = () => {
   const {joinId} = useSelector((state: AppStoreType) => state.global);
@@ -13,11 +14,13 @@ export const Room = () => {
   const { time, userCount } = useWsRoom(videoRef);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const closeMeeting = () => {
     SignalingManager.getInstance().closeMeeting(joinId as string);
     toast.dismiss();
     toast.success('Meeting closed successfully!');
+    dispatch(setJoinId(null));
     navigate('/');
   }
 

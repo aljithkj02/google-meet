@@ -64,7 +64,8 @@ class IncomingMessage {
         const key = crypto.randomBytes(10).toString('base64url');
 
         this.appStore[key] = {
-            owner: ws
+            owner: ws,
+            viewers: {}
         }
 
         ws.send(JSON.stringify({
@@ -83,7 +84,8 @@ class IncomingMessage {
             return;
         }
         
-        this.users[this.id] = ws;
+        // this.users[this.id] = ws;
+        room.viewers[this.id] = ws;
 
         ws.send(JSON.stringify({
             type: MessageTypes.JOIN_SUCCESSFUL,
@@ -111,7 +113,8 @@ class IncomingMessage {
             return;
         }
 
-        const user = this.users[payload.userId];
+        // const user = this.users[payload.userId];
+        const user = room.viewers[payload.userId];
         if (!user) {
             ws.send(JSON.stringify({
                 type: MessageTypes.ERROR,
@@ -146,7 +149,16 @@ class IncomingMessage {
     }
 
     private giveIceCandidateToUser(ws: WebSocket, payload: IceCandidateUser) {
-        const user = this.users[payload.userId];
+        const room = this.appStore[payload.roomId];
+        if (!room) {
+            ws.send(JSON.stringify({
+                type: MessageTypes.ERROR,
+                message: "No such room exist!"
+            }))
+            return;
+        }
+
+        const user = room.viewers[payload.userId];
         if (!user) {
             ws.send(JSON.stringify({
                 type: MessageTypes.ERROR,
@@ -190,7 +202,7 @@ class IncomingMessage {
             return;
         }
 
-        delete this.users[payload.userId];
+        delete room.viewers[payload.userId];
 
         room.owner.send(JSON.stringify({
             type: MessageTypes.LEAVE_MEETING,
@@ -209,6 +221,13 @@ class IncomingMessage {
             }))
             return;
         }
+
+        Object.values(room.viewers).forEach((ws) => {
+            ws.send(JSON.stringify({
+                type: MessageTypes.MEETING_CLOSED,
+                message: 'Owner closed the meeting!'
+            }))
+        })
 
         delete this.appStore[payload.roomId]
     }

@@ -15,6 +15,7 @@ export enum MessageTypes {
     ICE_CANDIDATE_TO_USER = "ICE_CANDIDATE_TO_USER",
     LEAVE_MEETING = "LEAVE_MEETING",
     CLOSE_MEETING = "CLOSE_MEETING",
+    MEETING_CLOSED = "MEETING_CLOSED"
 }
 
 export interface ReceiveAnswerPayload {

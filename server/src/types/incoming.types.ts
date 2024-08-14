@@ -4,6 +4,7 @@ export type AppStoreType = Record<string, SingleRoom>;
 
 interface SingleRoom {
     owner: WebSocket;
+    viewers: Record<number, WebSocket>
 }
 
 export type GiveOfferPayload = {
@@ -27,6 +28,7 @@ export type IceCandidateOwner = {
 export type IceCandidateUser = {
     candidate: string;
     userId: number;
+    roomId: string;
 }
 
 export type TypeLeaveMeating = {

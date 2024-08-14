@@ -1,12 +1,17 @@
 import { RefObject, useEffect, useState } from "react";
 import { SignalingManager } from "../managers/signaling.manager";
 import { MessageTypes } from "../types";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppStoreType } from "../store/appStore";
+import toast from "react-hot-toast";
+import { setJoinId, setUserId } from "../store/slices/global.slice";
+import { useNavigate } from "react-router-dom";
 
 export const useWsViewer = (videoRef: RefObject<HTMLVideoElement>) => {
     const { userId, joinId } = useSelector((state: AppStoreType) => state.global);
     const [rtc, setRtc] = useState<RTCPeerConnection | null>(null);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         SignalingManager.getInstance().setCallbacks(MessageTypes.RECEIVE_OFFER, async (sdp: RTCSessionDescription) => {
@@ -40,6 +45,14 @@ export const useWsViewer = (videoRef: RefObject<HTMLVideoElement>) => {
 
         SignalingManager.getInstance().setCallbacks(MessageTypes.LEAVE_MEETING, (candidate: RTCIceCandidate) => {
             rtc?.addIceCandidate(candidate);
+        })
+
+        SignalingManager.getInstance().setCallbacks(MessageTypes.MEETING_CLOSED, (msg: string) => {
+            toast.dismiss();
+            toast.success(msg);
+            dispatch(setJoinId(null));
+            dispatch(setUserId(null));
+            navigate('/');
         })
 
     }, []);
