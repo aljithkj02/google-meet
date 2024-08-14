@@ -3,11 +3,13 @@ import { SignalingManager } from "../managers/signaling.manager";
 import { MessageTypes } from "../types";
 import { AppStoreType } from "../store/appStore";
 import { useSelector } from "react-redux";
+import { closeRTCPeerConnection, getCurrentTime } from "../utils";
 
 export const useWsRoom = (videoRef: RefObject<HTMLVideoElement>) => {
     const [userCount, setUserCount] = useState(0);
     const {joinId} = useSelector((state: AppStoreType) => state.global);
     const [time, setTime] = useState(getCurrentTime());
+    const [rtc, setRtc] = useState<RTCPeerConnection | null>(null);
 
     useEffect(() => {
         SignalingManager.getInstance().setCallbacks(MessageTypes.NEW_USER, async (id: number) => {
@@ -39,6 +41,7 @@ export const useWsRoom = (videoRef: RefObject<HTMLVideoElement>) => {
             }
 
             SignalingManager.getInstance().addNewViewer(id, pc);
+            setRtc(pc);
         })
 
         SignalingManager.getInstance().setCallbacks(MessageTypes.RECEIVE_ANSWER, ({userId, sdp }: { userId: number, sdp: RTCSessionDescription}) => {
@@ -75,6 +78,8 @@ export const useWsRoom = (videoRef: RefObject<HTMLVideoElement>) => {
                 
                 SignalingManager.getInstance().stream = null;
                 videoRef.current.srcObject = null;
+
+                rtc && closeRTCPeerConnection(rtc);
             }
         }
     }, [])
@@ -88,21 +93,6 @@ export const useWsRoom = (videoRef: RefObject<HTMLVideoElement>) => {
 
             videoRef.current && videoRef.current.play();
         }
-    }
-
-    function getCurrentTime() {
-        const date = new Date();
-        let hours = date.getHours();
-        const minutes = date.getMinutes();
-        const seconds = date.getSeconds();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-
-        return `${hours}:${formattedMinutes}:${formattedSeconds} ${ampm}`;
     }
 
     return { userCount, time };

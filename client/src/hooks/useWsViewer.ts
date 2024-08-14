@@ -6,6 +6,7 @@ import { AppStoreType } from "../store/appStore";
 import toast from "react-hot-toast";
 import { setJoinId, setUserId } from "../store/slices/global.slice";
 import { useNavigate } from "react-router-dom";
+import { closeRTCPeerConnection } from "../utils";
 
 export const useWsViewer = (videoRef: RefObject<HTMLVideoElement>) => {
     const { userId, joinId } = useSelector((state: AppStoreType) => state.global);
@@ -54,6 +55,10 @@ export const useWsViewer = (videoRef: RefObject<HTMLVideoElement>) => {
             dispatch(setUserId(null));
             navigate('/');
         })
+
+        return () => {
+            rtc && closeRTCPeerConnection(rtc);
+        }
 
     }, []);
 }
