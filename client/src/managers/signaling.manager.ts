@@ -35,7 +35,6 @@ export class SignalingManager {
         this.ws.onmessage = (event) => {
             const message = JSON.parse(event.data);
             const type: MessageTypes = message.type;
-            console.log({message})
 
             switch (type) {
                 case MessageTypes.JOIN_ID:

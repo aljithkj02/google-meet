@@ -43,6 +43,10 @@ class IncomingMessage {
                 this.giveIceCandidateToOwner(ws, message.data);
                 break;
             
+            case MessageTypes.ICE_CANDIDATE_TO_USER:
+                this.giveIceCandidateToUser(ws, message.data);
+                break;
+            
             case MessageTypes.LEAVE_MEETING:
                 this.leaveMeeting(ws, message.data);
                 break;
